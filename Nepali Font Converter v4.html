@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nepali Font Converter – Preeti, Kantipur, Unicode</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#f7f6f2;--fg:#1d1d1b;--card:#fff;--bd:#d9d6cc;--ac:#b3261e;--mut:#6b685f;--wr:#8a6100;--bl:#0b5cad;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171716;--fg:#ecebe6;--card:#22221f;--bd:#3a3935;--ac:#ff8a80;--mut:#9d9a90;--wr:#e0b84a;--bl:#8ab8ff}}
+:root[data-theme="dark"]{--bg:#171716;--fg:#ecebe6;--card:#22221f;--bd:#3a3935;--ac:#ff8a80;--mut:#9d9a90;--wr:#e0b84a;--bl:#8ab8ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.35rem;margin:4px 0 2px}
+p.sub{margin:0 0 14px;color:var(--mut);font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,button,textarea,input[type=text]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+select{flex:1;min-width:120px;max-width:100%}
+.bar input[type=text]{flex:1;min-width:90px}
+.fx{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--bd);padding:4px 0;font-size:.9rem}
+.fx span{overflow-wrap:anywhere}
+button{cursor:pointer}
+button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.pri{color:#171716}}
+label.l{font-size:.8rem;color:var(--mut);display:block;margin:4px 0}
+textarea{width:100%;min-height:150px;resize:vertical;font-size:1.05rem}
+.pre{font-family:Preeti,Kantipur,Himalb,Sagarmatha,Kanchan,"Courier New",monospace}
+#dr{position:fixed;left:0;right:0;bottom:0;max-height:75vh;overflow-y:auto;background:var(--card);border-top:2px solid var(--ac);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));z-index:20;display:none}
+#dr.on{display:block}
+#dr h3{margin:14px 0 4px;font-size:1rem}
+#dr .g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+#dr .k{border:1px solid var(--bd);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+#dr .k b{font-size:1.2rem;font-weight:500}
+#dr code{font-size:.85rem;color:var(--ac)}
+#dr ul{margin:4px 0;padding-left:18px;font-size:.9rem}
+.dev{font-family:"Noto Sans Devanagari",Mangal,"Nirmala UI",sans-serif}
+.st{font-size:.85rem;color:var(--mut);margin:8px 0 0;min-height:1.2em}
+.words{max-height:340px;overflow-y:auto}
+.row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin:4px 0;align-items:center}
+.row span{overflow-wrap:anywhere}
+.row input{width:100%}
+details summary{cursor:pointer;font-weight:600}
+.chip{display:inline-block;font-size:.75rem;border-radius:10px;padding:1px 8px;margin:3px 4px 0 0;border:1px solid var(--bd);overflow-wrap:anywhere}
+.chip.err{border-color:var(--ac);color:var(--ac)}
+.chip.chk{border-color:var(--wr);color:var(--wr)}
+.chip.sp{border-color:var(--bl);color:var(--bl)}
+.chip button.mini{font-size:.75rem;padding:0 6px;margin-left:4px;border-radius:8px}
+.fl{margin:0 0 6px}
+.rp{width:100%;border-collapse:collapse;font-size:.9rem}
+.rp th,.rp td{border-bottom:1px solid var(--bd);padding:4px 6px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+footer{text-align:center;color:var(--mut);font-size:.85rem;padding:14px 0 6px}
+</style>
+</head>
+<body>
+<main>
+<h1>Nepali Font Converter</h1>
+<p class="sub">Preeti, Kantipur, Fantasy Himali, Sagarmatha, Kanchan ⇄ Unicode. Upload Word, Excel, PowerPoint or text files: layout, line and page breaks and formatting are kept.</p>
+
+<div class="card">
+ <div class="bar">
+  <select id="from" aria-label="Convert from"></select>
+  <button id="swap" title="Swap" aria-label="Swap">⇄</button>
+  <select id="to" aria-label="Convert to"></select>
+  <button id="det" title="Detect the Nepali font in the text or file">Detect</button>
+ </div>
+ <label class="l"><input type="checkbox" id="autodet" checked> Auto-detect the font when I upload or paste</label>
+ <label class="l"><input type="checkbox" id="eng" checked> Keep English words unconverted (legacy font input)</label>
+ <label class="l">Numbers &amp; dates <select id="num"><option value="keep">Keep Latin numbers as typed (2082/08/05)</option><option value="dev">Latin digits → Devanagari</option><option value="lat">Devanagari → Latin digits (Unicode output)</option></select></label>
+ <label class="l" for="in">Input</label>
+ <textarea id="in" placeholder="Paste text here…"></textarea>
+ <label class="l" for="out">Output (you can edit it directly)</label>
+ <textarea id="out"></textarea>
+ <div class="bar" id="flagbar" style="margin-top:8px;display:none"><span class="st" id="flagsum" style="margin:0"></span><button id="rev">Review flagged</button></div>
+ <div class="bar" style="margin-top:8px">
+  <button id="copy" class="pri">Copy</button>
+  <button id="up">Upload file</button>
+  <button id="dl">Download converted file</button>
+  <button id="dltxt">Download .txt</button>
+  <button id="clr">Clear</button>
+  <button id="guide">Typing guide</button>
+  <input type="file" id="file" accept=".docx,.xlsx,.pptx,.txt,.text,.csv,.tsv,.doc,.xls,.ppt" hidden>
+ </div>
+ <p class="st" id="st"></p>
+</div>
+
+<div class="card">
+ <details open id="wd">
+  <summary>Word by word &amp; fix wrong conversions</summary>
+  <p class="st">Edit any converted word below. The correction is remembered on this device and used for the whole text and for Word files.</p>
+  <label class="l"><input type="checkbox" id="onlyflag"> Show only flagged words (suspicious conversions and spelling suggestions)</label>
+  <div class="words" id="words"></div>
+  <div class="bar" style="margin-top:8px"><button id="clrfx">Clear all saved fixes</button><span class="st" id="fxn"></span></div>
+ </details>
+</div>
+
+<div class="card">
+ <details open>
+  <summary>Saved fixes &amp; rules</summary>
+  <p class="st">Three ways to fix a wrong conversion, all remembered on this device: (1) edit a word in the list above; (2) edit the Output yourself, then press Save my edits; (3) add a rule for text that always converts wrong.</p>
+  <div class="bar"><button id="svedits" class="pri">Save my edits as fixes</button></div>
+  <div class="bar" style="margin-top:8px"><input type="text" id="rf" placeholder="Find"><input type="text" id="rr" placeholder="Replace with"><select id="rs"><option value="out">in output</option><option value="src">in input</option></select><button id="radd">Add rule</button></div>
+  <p class="st" id="fxmsg"></p>
+  <div class="words" id="fixlist"></div>
+  <div class="bar" style="margin-top:8px"><button id="fxexp">Export fixes</button><button id="fximp">Import fixes</button><input type="file" id="fxfile" accept=".json" hidden></div>
+ </details>
+</div>
+<div class="card">
+ <details>
+  <summary>Quality checks &amp; report</summary>
+  <h4 style="margin:10px 0 4px">Built-in rule check</h4>
+  <p class="st" id="rulechk"></p>
+  <div class="bar"><button id="rcrun">Run rule check</button></div>
+  <div id="rcout"></div>
+  <h4 style="margin:14px 0 4px">Original vs converted report</h4>
+  <p class="st">Lists every word with its converted form, how often it occurs, and any warnings. It is built automatically when you download a file; press Build report for typed text or to refresh it.</p>
+  <div class="bar"><button id="rpbuild" class="pri">Build report</button><select id="rpf"><option value="all">All words</option><option value="conv">Converted</option><option value="kept">Kept as typed</option><option value="flag">Flagged &amp; spelling</option></select><button id="rpcsv">Download CSV</button><button id="rpcopy">Copy</button></div>
+  <p class="st" id="rpsum"></p>
+  <div id="rpbox"></div>
+ </details>
+</div>
+<div class="card st" style="margin:0">
+ Kantipur, Fantasy Himali, Sagarmatha and Kanchan are handled with the Preeti key layout; if a glyph differs in your font, fix the word once and it is remembered. Legacy text displays correctly only if that font is installed. Excel: only the font name of converted cells changes (size, colour, borders, formats, formulas and sheet names stay). PowerPoint: slides, notes, tables, charts and SmartArt text are converted run by run. Text inside pictures, and data inside embedded chart workbooks, cannot be converted. Text files keep every line break and tab. English words: in Word files, runs set in a non-Nepali font (e.g. Times New Roman) are skipped automatically; in pasted text, common English words, acronyms, emails and links are kept, and the EN button next to any word keeps or releases it.
+</div>
+<div id="dr" role="dialog" aria-label="Typing guide"></div>
+<footer>Developed by Santosh Phuyal</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const NM={pre:'Preeti',kan:'Kantipur',him:'Fantasy Himali',sag:'Sagarmatha',kch:'Kanchan',uni:'Unicode (नेपाली)'};
+const LEG=['pre','kan','him','sag','kch'];
+const FONT={uni:'Mangal',pre:'Preeti',kan:'Kantipur',him:'Himalb',sag:'Sagarmatha',kch:'Kanchan'};
+const P={a:'ब',b:'द',c:'अ',d:'म',e:'भ',f:'ा',g:'न',h:'ज',i:'ष्',j:'व',k:'प',l:'\uE001',m:'फ',n:'ल',o:'य',p:'उ',q:'त्र',r:'च',s:'क',t:'त',u:'ग',v:'ख',w:'ध',x:'ह',y:'थ',z:'श',
+A:'ब्',B:'द्य',C:'ऋ',D:'म्',E:'भ्',F:'ँ',G:'न्',H:'ज्',I:'क्ष्',J:'व्',K:'प्',L:'ी',M:'ः',N:'ल्',O:'इ',P:'ए',Q:'त्त',R:'च्',S:'क्',T:'त्',U:'ग्',V:'ख्',W:'ध्',X:'ह्',Y:'थ्',Z:'श्',
+'0':'ण्','1':'ज्ञ','2':'द्द','3':'घ','4':'द्ध','5':'छ','6':'ट','7':'ठ','8':'ड','9':'ढ',
+')':'०','!':'१','@':'२','#':'३','$':'४','%':'५','^':'६','&':'७','*':'८','(':'९',
+'`':'ञ','~':'ञ्','_':')','+':'ं','-':'(','=':'.','|':'्र','\\':'्','[':'ृ',']':'े','{':'\uE000','}':'ै',
+';':'स',':':'स्',"'":'ु','"':'ू','.':'।','/':'र','<':'?','>':'श्र','?':'रु','ª':'ङ','¢':'द्य','£':'घ्','§':'ट्ट','¶':'ठ्ठ','å':'द्व','‰':'झ्','«':'्र','÷':'/','‘':'ु','’':'ु','“':'ू','”':'ू','¿':'रू','Í':'ङ्क','Ë':'ङ्ग','Î':'ङ्ख','Ï':'ङ्घ','Å':'हृ','ˆ':'फ्','¥':'र्','»':'्र','æ':'“','Æ':'”','Ù':';','Ú':':'};
+const C='[\u0915-\u0939]',MT='[\u093E-\u094C\u0901-\u0903]',CL='(?:'+C+'\u094D)*'+C;
+function p2u(w){
+ w=w.replace(/^M/,'\uE002').replace(/Qm/g,'क्त').replace(/qm/g,'क्र').replace(/km/g,'फ').replace(/em/g,'झ').replace(/O\{/g,'ई').replace(/pm/g,'ऊ');
+ let o='';for(const ch of w)o+=P[ch]??ch;o=o.replace(/\uE002/g,':').replace(/\u094D{2,}/g,'\u094D');
+ o=o.replace(/\u094D\u093E/g,'').replace(/\u093E\u0947/g,'\u094B').replace(/\u093E\u0948/g,'\u094C')
+  .replace(/अ\u094B/g,'ओ').replace(/अ\u094C/g,'औ').replace(/अ\u093E/g,'आ').replace(/ए\u0948/g,'ऐ');
+ o=o.replace(new RegExp('\uE001('+CL+')','g'),'$1\u093F').replace(/\uE001/g,'');
+ o=o.replace(new RegExp('('+CL+MT+'*)\uE000','g'),'र्$1').replace(/\uE000/g,'');
+ return o;
+}
+/* Unicode -> Preeti */
+const PF={क:'s',ख:'v',ग:'u',घ:'3',ङ:'ª',च:'r',छ:'5',ज:'h',झ:'em',ञ:'`',ट:'6',ठ:'7',ड:'8',ढ:'9',ण:'0f',त:'t',थ:'y',द:'b',ध:'w',न:'g',प:'k',फ:'m',ब:'a',भ:'e',म:'d',य:'o',र:'/',ल:'n',व:'j',श:'z',ष:'if',स:';',ह:'x'};
+const PH={क:'S',ख:'V',ग:'U',घ:'£',च:'R',ज:'H',झ:'‰',ञ:'~',ण:'0',त:'T',थ:'Y',ध:'W',न:'G',प:'K',ब:'A',भ:'E',म:'D',ल:'N',व:'J',श:'Z',ष:'i',स:':',ह:'X'};
+const CJ=[['क्ष','If','I'],['ज्ञ','1',''],['त्र','q',''],['श्र','>',''],['त्त','Q',''],['द्य','B',''],['द्द','2',''],['द्ध','4',''],['द्व','å',''],['ट्ट','§',''],['ठ्ठ','¶','']];
+const IV={अ:'c',आ:'cf',इ:'O',ई:'O{',उ:'p',ऊ:'pm',ऋ:'C',ए:'P',ऐ:'P}',ओ:'cf]',औ:'cf}'};
+const PN={'०':')','१':'!','२':'@','३':'#','४':'$','५':'%','६':'^','७':'&','८':'*','९':'(','।':'.','.':'=','(':'-',')':'_','?':'<',':':'M'};
+const MP={'\u093E':'f','\u0940':'L','\u0941':"'",'\u0942':'"','\u0943':'[','\u0947':']','\u0948':'}','\u094B':'f]','\u094C':'f}','\u0902':'+','\u0901':'F','\u0903':'M'};
+const UR=new RegExp('(र्)?((?:'+C+'\u094D)*'+C+')('+MT+'*)(\u094D)?|([\u0904-\u0914])|([०-९।.()?:])','g');
+function u2p(s){return s.replace(UR,(m,rf,cl,mt,hal,iv,pn)=>{
+ if(iv)return IV[iv]??iv;if(pn)return PN[pn];
+ const parts=[];let i=0;
+ while(i<cl.length){const j=CJ.find(x=>cl.startsWith(x[0],i));
+  if(j){parts.push([j[1],j[2]]);i+=j[0].length}else{const c=cl[i++];parts.push([PF[c]||c,PH[c]||''])}
+  if(cl[i]==='\u094D'){i++;if(cl[i]==='र'){const p=parts[parts.length-1];p[0]+='|';p[1]=p[0]+'\\';i++;if(cl[i]==='\u094D')i++}}}
+ let out='';parts.forEach((p,k)=>{out+=(k===parts.length-1&&!hal)?p[0]:(p[1]||p[0]+'\\')});
+ let pre='',post='';for(const ch of mt){if(ch==='\u093F')pre='l';else post+=MP[ch]||''}
+ if(cl==='र'&&mt==='\u0941'&&!hal)return '?'+(rf?'{':'');if(cl==='र'&&mt==='\u0942'&&!hal)return '¿'+(rf?'{':'');return pre+out+post+(rf?'{':'');});}
+/* pipeline + fixes */
+const NL=k=>LEG.includes(k)?'leg':k;
+const fk=(f,t,w)=>NL(f)+'>'+NL(t)+'|'+w;
+let fx={},rules=[];
+try{fx=JSON.parse(localStorage.getItem('npfix')||'{}');rules=JSON.parse(localStorage.getItem('nprules')||'[]')}catch(e){}
+for(const k of Object.keys(fx)){const n=k.replace(/^(pre|kan|him|sag|kch)>/,'leg>').replace(/^(\w+)>(pre|kan|him|sag|kch)\|/,'$1>leg|');if(n!==k){fx[n]=fx[k];delete fx[k]}}
+const saveFx=()=>{try{localStorage.setItem('npfix',JSON.stringify(fx));localStorage.setItem('nprules',JSON.stringify(rules))}catch(e){}};
+const isNum=w=>/^[\(\[]?[0-9]+(?:[.,\/:\-\u2013][0-9]+)*[%\)\]]?[.,;:]?$/.test(w);
+const toDev=w=>w.replace(/[0-9]/g,d=>'\u0966\u0967\u0968\u0969\u096a\u096b\u096c\u096d\u096e\u096f'[d]);
+const toLat=w=>w.replace(/[\u0966-\u096f]/g,d=>d.charCodeAt(0)-2406);
+function toUni(w,f){return f==='uni'?w:p2u(w)}
+function fromUni(w,t){return t==='uni'?w:u2p(w)}
+function auto(w,f,t){return f===t?w:fromUni(toUni(w,f),t)}
+const ENG=new Set('the and for are but not you all any can had her was one our out day get has him his how man new now old see two way who boy did its let put say she too use with from have this that will your they been were what when which their there about would these other into than then them some time very just also more only over such most made like well back after first work year even good must much many each both same here says used need part case line high long make know take come could should shall those where while under again great state small large point place right group order number system company people world water house school city country office report letter email mail phone mobile page file form date name list item data info text type test copy print save open close help send input output user admin login password online website internet service program project class free paid total bank account amount price rate cost sale loan fund board team head manager director officer staff public private general national local central village district province ward road street market hospital college university education health science computer software hardware design power energy electricity authority limited ltd pvt note please thank thanks dear sir madam regards yours sincerely subject reference attached below above following january february march april june july august september october november december monday tuesday wednesday thursday friday saturday sunday baisakh baishakh jestha jeth asar ashar shrawan saun bhadra bhadau ashwin ashoj kartik mangsir poush magh falgun chaitra'.split(' '));
+function isEng(w){
+ if(!$('eng').checked)return false;
+ if(/^[\w.+-]+@[\w-]+\.[\w.-]+/.test(w)||/^https?:\/\//i.test(w)||/^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.(com|org|np|gov|edu|net)\b/i.test(w))return true;
+ const m=w.match(/^([^A-Za-z]*)([A-Za-z]+)([^A-Za-z]*)$/);if(!m)return false;
+ const c=m[2];return /^[A-Z]{2,}$/.test(c)||(c.length>=3&&ENG.has(c.toLowerCase())&&(c===c.toLowerCase()||c===c[0]+c.slice(1).toLowerCase()&&c[0]===c[0].toUpperCase()));
+}
+function convTok0(w,f,t){const k=fk(f,t,w);if(fx[k]!==undefined)return fx[k];
+ if(f!==t){const nm=$('num').value;
+  if(isNum(w)&&(LEG.includes(f)||f==='uni'))return nm==='dev'?toDev(w):w;
+  if(LEG.includes(f)&&/^[!@#$%^&*()]+(?:[-\u00f7\/.][!@#$%^&*()]+)+$/.test(w)){const o=w.replace(/[!@#$%^&*()]/g,c=>P[c]).replace(/\u00f7/g,'/');return nm==='lat'&&t==='uni'?toLat(o):o}
+  if(LEG.includes(f)&&isEng(w))return w;
+  if(f==='uni'&&!/[\u0900-\u097F]/.test(w)&&/[A-Za-z]/.test(w))return w;
+  const o=auto(w,f,t);return nm==='lat'&&t==='uni'?toLat(o):o}
+ return auto(w,f,t)}
+function applyRules(s,f,t,sc){const d=NL(f)+'>'+NL(t);for(const r of rules)if(r.d===d&&r.s===sc&&r.f)s=s.split(r.f).join(r.r);return s}
+function conv(s,f,t){s=applyRules(s,f,t,'src');return applyRules(s.split(/(\s+)/).map((x,i)=>i%2||!x?x:convTok(x,f,t)).join(''),f,t,'out')}
+/* UI */
+let docBuf=null,docName='';
+const fromS=$('from'),toS=$('to');
+for(const k in NM){fromS.add(new Option(NM[k],k));toS.add(new Option(NM[k],k))}
+fromS.value='pre';toS.value='uni';
+const cls=k=>LEG.includes(k)?'pre':'dev';
+function run(words=true){
+ const f=fromS.value,t=toS.value;
+ $('in').className=cls(f);$('out').className=cls(t);
+ $('out').value=conv($('in').value,f,t);
+ if(words)renderWords();
+ $('fxn').textContent=Object.keys(fx).length+' word fix(es), '+rules.length+' rule(s)';renderFixes();
+}
+function renderWords(){
+ const f=fromS.value,t=toS.value,box=$('words');box.innerHTML='';
+ const seen=[...new Set($('in').value.split(/\s+/).filter(Boolean))];
+ if(!seen.length){box.innerHTML='<p class="st">Words will appear here.</p>';$('flagbar').style.display='none';return}
+ const info=seen.map(w=>{const o=convTok(w,f,t);return{w,o,an:analyze(w,o,f,t),sp:spell(o,t)}});
+ const nE=info.filter(x=>x.an.length).length,nS=info.filter(x=>x.sp).length;
+ $('flagbar').style.display=(nE||nS)?'flex':'none';
+ $('flagsum').textContent=(nE?'⚠ '+nE+' suspicious word(s)':'')+(nE&&nS?' · ':'')+(nS?'✎ '+nS+' spelling suggestion(s)':'');
+ const list=$('onlyflag').checked?info.filter(x=>x.an.length||x.sp):info.slice(0,200);
+ if(!list.length){box.innerHTML='<p class="st">No flagged words.</p>';return}
+ for(const x of list){
+  const w=x.w,wrap=document.createElement('div'),r=document.createElement('div');r.className='row';
+  const sp=document.createElement('span');sp.className=cls(f);sp.textContent=w;
+  const i=document.createElement('input');i.type='text';i.className=cls(t);i.value=x.o;
+  i.addEventListener('change',()=>{const k=fk(f,t,w),v=i.value.trim();delete fx[k];const d=convTok(w,f,t);
+   if(!v||v===d)delete fx[k];else fx[k]=v;
+   saveFx();run(false);i.value=convTok(w,f,t)});
+  const b=document.createElement('button');b.textContent='EN';b.title='Keep this word as English / undo';
+  b.addEventListener('click',()=>{const k=fk(f,t,w);if(fx[k]===w)delete fx[k];else fx[k]=w;saveFx();run()});
+  r.append(sp,i,b);wrap.append(r);
+  if(x.an.length||x.sp){
+   const d=document.createElement('div');d.className='fl';
+   for(const a of x.an){const c=document.createElement('span');c.className='chip '+a.k;c.textContent=a.m;d.append(c)}
+   if(x.sp){const c=document.createElement('span');c.className='chip sp';c.textContent='Spelling: '+x.sp.from+' → '+x.sp.word;
+    const b2=document.createElement('button');b2.className='mini';b2.textContent='Use';b2.title='Save this spelling as a fix';
+    b2.onclick=()=>{fx[fk(f,t,w)]=x.sp.to;saveFx();run()};c.append(b2);d.append(c)}
+   wrap.append(d);
+  }
+  box.append(wrap);
+ }
+}
+let tm;$('in').addEventListener('input',()=>{docBuf=null;$('st').textContent='';clearTimeout(tm);tm=setTimeout(run,150)});
+fromS.onchange=toS.onchange=()=>run();$('eng').onchange=$('num').onchange=()=>run();
+$('swap').onclick=()=>{const a=fromS.value;fromS.value=toS.value;toS.value=a;$('in').value=$('out').value;docBuf=null;run()};
+$('clr').onclick=()=>{$('in').value='';$('out').value='';docBuf=null;$('st').textContent='';run()};
+let cc=0;$('clrfx').onclick=()=>{if(!cc){$('clrfx').textContent='Tap again to delete all';cc=setTimeout(()=>{cc=0;$('clrfx').textContent='Clear all saved fixes'},3000);return}clearTimeout(cc);cc=0;$('clrfx').textContent='Clear all saved fixes';fx={};rules=[];saveFx();run()};
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);$('st').textContent='Copied.'}catch(e){$('out').select();$('st').textContent='Select and copy the output manually.'}};
+$('up').onclick=()=>$('file').click();
+const W='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const XML_NS='http://www.w3.org/XML/1998/namespace';
+const PRE_F=/preeti|kantipur|himal|fantasy|nepali|pcs|sagar|kanchan|fontasy|ganess|rukmini|suryodaya|meronepal/i;
+const INLINE_WRAP=new Set(['hyperlink','ins','smartTag','sdt','sdtContent','fldSimple','customXml']);
+const BREAK_TAGS=new Set(['br','cr','tab','drawing','pict','object','fldChar','instrText','pgNum','sym','footnoteReference','endnoteReference','commentReference']);
+
+function getChild(el,name){return el?[...el.children].find(e=>e.localName===name)||null:null}
+function getFontFromRPr(rp){
+ const rf=getChild(rp,'rFonts');if(!rf)return '';
+ return rf.getAttributeNS(W,'ascii')||rf.getAttributeNS(W,'hAnsi')||rf.getAttributeNS(W,'cs')||'';
+}
+async function parseStyleFonts(z){
+ const info={def:'',styles:{},basedOn:{},defPara:''};
+ const sf=z.file('word/styles.xml');if(!sf)return info;
+ const d=new DOMParser().parseFromString(await sf.async('string'),'application/xml');
+ const dd=d.getElementsByTagNameNS(W,'docDefaults')[0];
+ if(dd){const rpd=getChild(dd,'rPrDefault');info.def=getFontFromRPr(getChild(rpd,'rPr'))}
+ for(const st of d.getElementsByTagNameNS(W,'style')){
+  const id=st.getAttributeNS(W,'styleId');if(!id)continue;
+  const bo=getChild(st,'basedOn');if(bo)info.basedOn[id]=bo.getAttributeNS(W,'val')||'';
+  if(st.getAttributeNS(W,'type')==='paragraph'&&st.getAttributeNS(W,'default')==='1')info.defPara=id;
+  info.styles[id]=getFontFromRPr(getChild(st,'rPr'));
+ }
+ return info;
+}
+function resolveStyleFont(info,id,seen=new Set()){
+ if(!id||seen.has(id))return '';seen.add(id);
+ return info.styles[id]||resolveStyleFont(info,info.basedOn[id],seen);
+}
+function resolveRunFont(r,p,info){
+ const rp=getChild(r,'rPr');
+ let fn=getFontFromRPr(rp);if(fn)return fn;
+ const rs=getChild(rp,'rStyle');
+ if(rs){fn=resolveStyleFont(info,rs.getAttributeNS(W,'val'));if(fn)return fn}
+ const pp=getChild(p,'pPr');
+ fn=getFontFromRPr(getChild(pp,'rPr'));if(fn)return fn;
+ const ps=getChild(pp,'pStyle');
+ if(ps){fn=resolveStyleFont(info,ps.getAttributeNS(W,'val'));if(fn)return fn}
+ if(info.defPara){fn=resolveStyleFont(info,info.defPara);if(fn)return fn}
+ return info.def||'';
+}
+function rPrSignature(r){
+ const rp=getChild(r,'rPr');if(!rp)return '';
+ const parts=[];
+ for(const ch of rp.children){
+  if(ch.localName==='rFonts'||ch.localName==='lang'||ch.localName==='noProof')continue;
+  parts.push(new XMLSerializer().serializeToString(ch));
+ }
+ return parts.join('');
+}
+function syncRunFormatting(d,r,font,toStyle){
+ let rp=getChild(r,'rPr');
+ if(!rp){rp=d.createElementNS(W,'w:rPr');r.insertBefore(rp,r.firstChild)}
+ let rf=getChild(rp,'rFonts');
+ if(!rf){rf=d.createElementNS(W,'w:rFonts');const sty=getChild(rp,'rStyle');
+  rp.insertBefore(rf,sty?sty.nextSibling:rp.firstChild)}
+ for(const a of ['asciiTheme','hAnsiTheme','cstheme','eastAsiaTheme'])rf.removeAttributeNS(W,a);
+ for(const a of ['ascii','hAnsi','cs','eastAsia'])rf.setAttributeNS(W,'w:'+a,font);
+ /* Keep visual size, bold, italic identical between ASCII (Preeti) and Complex Script (Unicode) */
+ const syncPair=(lat,cs)=>{
+  const elL=getChild(rp,lat),elC=getChild(rp,cs);
+  if(toStyle==='uni'&&elL&&!elC){
+   const c=d.createElementNS(W,'w:'+cs);
+   for(const at of elL.attributes)c.setAttributeNS(at.namespaceURI,at.name,at.value);
+   rp.insertBefore(c,elL.nextSibling);
+  }else if(LEG.includes(toStyle)&&elC&&!elL){
+   const l=d.createElementNS(W,'w:'+lat);
+   for(const at of elC.attributes)l.setAttributeNS(at.namespaceURI,at.name,at.value);
+   rp.insertBefore(l,elC);
+  }
+ };
+ syncPair('sz','szCs');syncPair('b','bCs');syncPair('i','iCs');
+}
+function collectParagraphTokens(node,out){
+ for(const ch of node.children){
+  const ln=ch.localName;
+  if(ln==='pPr'||ln==='drawing'||ln==='pict'||ln==='p'||ln==='tbl')continue;
+  if(ln==='r'){
+   for(const rc of ch.children){
+    if(rc.localName==='t')out.push({type:'t',t:rc,r:ch});
+    else if(BREAK_TAGS.has(rc.localName))out.push({type:'brk'});
+   }
+  }else if(INLINE_WRAP.has(ln)){
+   collectParagraphTokens(ch,out);
+  }
+ }
+}
+async function previewDocx(buf){
+ const z=await JSZip.loadAsync(buf),x=await z.file('word/document.xml').async('string');
+ const d=new DOMParser().parseFromString(x,'application/xml');
+ const lines=[];
+ for(const p of d.getElementsByTagNameNS(W,'p')){
+  let s='';
+  const walk=node=>{
+   for(const ch of node.children){
+    const ln=ch.localName;
+    if(ln==='pPr'||ln==='drawing'||ln==='pict'||ln==='p'||ln==='tbl')continue;
+    if(ln==='r'){
+     for(const rc of ch.children){
+      if(rc.localName==='t')s+=rc.textContent;
+      else if(rc.localName==='br'||rc.localName==='cr')s+='\n';
+      else if(rc.localName==='tab')s+='\t';
+     }
+    }else if(INLINE_WRAP.has(ln))walk(ch);
+   }
+  };
+  walk(p);lines.push(s);
+ }
+ return lines.join('\n');
+}
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+async function procDocx(buf,f,t){
+ const z=await JSZip.loadAsync(buf),font=FONT[t],styleInfo=await parseStyleFonts(z);
+ const names=Object.keys(z.files).filter(n=>/^word\/(document|header\d*|footer\d*|footnotes|endnotes|comments)\.xml$/.test(n));
+ for(const n of names){
+  const d=new DOMParser().parseFromString(await z.file(n).async('string'),'application/xml');
+  for(const p of d.getElementsByTagNameNS(W,'p')){
+   const toks=[];collectParagraphTokens(p,toks);
+   /* Split into contiguous convertible segments separated by breaks or non-convertible runs */
+   const segs=[];let cur=[];
+   const flush=()=>{if(cur.length){segs.push(cur);cur=[]}};
+   for(const tk of toks){
+    if(tk.type==='brk'){flush();continue}
+    const fn=resolveRunFont(tk.r,p,styleInfo);
+    const txt=tk.t.textContent;
+    let ok=true;
+    if(LEG.includes(f)&&fn&&!PRE_F.test(fn))ok=false;
+    if(f==='uni'&&!/[\u0900-\u097F]/.test(txt)&&/[A-Za-z]/.test(txt))ok=false;
+    if(!ok){flush();continue}
+    cur.push({...tk,sig:rPrSignature(tk.r)});
+   }
+   flush();
+   let paraConverted=false;
+   for(const seg of segs){
+    const fullText=seg.map(x=>x.t.textContent).join('');
+    if(f==='uni'&&!/[\u0900-\u097F]/.test(fullText))continue;
+    /* Group adjacent runs that share identical formatting OR are joined mid-word (no whitespace boundary) */
+    const groups=[];let g=[seg[0]];
+    for(let i=1;i<seg.length;i++){
+     const prev=g[g.length-1],curr=seg[i];
+     const prevTxt=prev.t.textContent,currTxt=curr.t.textContent;
+     const hasSpaceBoundary=/\s$/.test(prevTxt)||/^\s/.test(currTxt);
+     if(curr.sig===prev.sig||!hasSpaceBoundary){g.push(curr)}
+     else{groups.push(g);g=[curr]}
+    }
+    groups.push(g);
+    for(const grp of groups){
+     const raw=grp.map(x=>x.t.textContent).join('');
+     if(f==='uni'&&!/[\u0900-\u097F]/.test(raw))continue;
+     const converted=conv(raw,f,t);
+     grp[0].t.textContent=converted;
+     grp[0].t.setAttributeNS(XML_NS,'xml:space','preserve');
+     syncRunFormatting(d,grp[0].r,font,t);
+     for(let j=1;j<grp.length;j++){
+      grp[j].t.textContent='';
+      syncRunFormatting(d,grp[j].r,font,t);
+     }
+     paraConverted=true;
+    }
+   }
+   /* Update paragraph mark rPr font if paragraph had converted legacy text so line height/spacing stays consistent */
+   if(paraConverted){
+    const pp=getChild(p,'pPr'),prp=getChild(pp,'rPr');
+    if(prp){
+     const prf=getChild(prp,'rFonts');
+     if(prf&&(!LEG.includes(f)||PRE_F.test(getFontFromRPr(prp)||''))){
+      for(const a of ['asciiTheme','hAnsiTheme','cstheme','eastAsiaTheme'])prf.removeAttributeNS(W,a);
+      for(const a of ['ascii','hAnsi','cs','eastAsia'])prf.setAttributeNS(W,'w:'+a,font);
+     }
+    }
+   }
+  }
+  z.file(n,new XMLSerializer().serializeToString(d));
+ }
+ return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE'});
+}
+async function buildDocx(text,font){
+ const z=new JSZip(),H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+ z.file('[Content_Types].xml',H+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+ z.file('_rels/.rels',H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+ const ps=text.split('\n').map(l=>'<w:p><w:r><w:rPr><w:rFonts w:ascii="'+font+'" w:hAnsi="'+font+'" w:cs="'+font+'" w:eastAsia="'+font+'"/><w:sz w:val="28"/></w:rPr><w:t xml:space="preserve">'+esc(l)+'</w:t></w:r></w:p>').join('');
+ z.file('word/document.xml',H+'<w:document xmlns:w="'+W+'"><w:body>'+ps+'</w:body></w:document>');
+ return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE'});
+}
+function loadJSZip(){return new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';s.onload=res;s.onerror=()=>rej(new Error('Could not load the zip library'));document.head.appendChild(s)})}
+async function saveFile(filename,data,mimeType){
+ const dls=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+ if(dls){await dls.save({filename,data});return}
+ const blob=data instanceof Blob?data:new Blob([data],{type:mimeType||'application/octet-stream'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+/* ===== Multi-format support: Excel, PowerPoint, text ===== */
+const S_NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+const A_NS='http://schemas.openxmlformats.org/drawingml/2006/main';
+const C_NS='http://schemas.openxmlformats.org/drawingml/2006/chart';
+const DEVN=/[\u0900-\u097F]/;
+const MIME={docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',txt:'text/plain;charset=utf-8',text:'text/plain;charset=utf-8',csv:'text/csv;charset=utf-8',tsv:'text/tab-separated-values;charset=utf-8'};
+const TXTX=['txt','text','csv','tsv'];
+const kids=(el,n)=>el?[...el.children].filter(c=>c.localName===n):[];
+const xparse=s=>{const d=new DOMParser().parseFromString(s,'application/xml');if(d.getElementsByTagName('parsererror').length)throw new Error('XML error');return d};
+const xser=d=>{const s=new XMLSerializer().serializeToString(d);return /^<\?xml/.test(s)?s:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'+s};
+const numOf=n=>+((n.match(/(\d+)\.xml$/)||[0,0])[1]);
+const byNum=(z,re)=>Object.keys(z.files).filter(n=>re.test(n)).sort((a,b)=>numOf(a)-numOf(b));
+
+/* Shared engine: converts the runs of one paragraph/string, merging runs split mid-word, never crossing breaks */
+function convGroups(toks,f,t,o){
+ const segs=[];let cur=[];
+ const flush=()=>{if(cur.length){segs.push(cur);cur=[]}};
+ for(const tk of toks){
+  if(tk.type==='brk'){flush();continue}
+  const fn=o.fontOf(tk),txt=tk.t.textContent;let ok=true;
+  if(LEG.includes(f)){ok=o.strict?!!(fn&&PRE_F.test(fn)):!(fn&&!PRE_F.test(fn))}
+  if(f==='uni'&&!DEVN.test(txt)&&/[A-Za-z]/.test(txt))ok=false;
+  if(!ok){flush();continue}
+  cur.push({...tk,sig:o.sigOf(tk)});
+ }
+ flush();
+ let did=false;
+ for(const seg of segs){
+  if(f==='uni'&&!DEVN.test(seg.map(x=>x.t.textContent).join('')))continue;
+  const groups=[];let g=[seg[0]];
+  for(let i=1;i<seg.length;i++){
+   const prev=g[g.length-1],curr=seg[i];
+   const sp=/\s$/.test(prev.t.textContent)||/^\s/.test(curr.t.textContent);
+   if(curr.sig===prev.sig||!sp)g.push(curr);else{groups.push(g);g=[curr]}
+  }
+  groups.push(g);
+  for(const grp of groups){
+   const raw=grp.map(x=>x.t.textContent).join('');
+   if(f==='uni'&&!DEVN.test(raw))continue;
+   grp[0].t.textContent=conv(raw,f,t);
+   if(o.space)grp[0].t.setAttributeNS(XML_NS,'xml:space','preserve');
+   o.onRun(grp[0]);
+   for(let j=1;j<grp.length;j++){grp[j].t.textContent='';o.onRun(grp[j])}
+   did=true;
+  }
+ }
+ return did;
+}
+
+/* ---------- DrawingML (PowerPoint slides, notes, charts, Excel text boxes) ---------- */
+const DML_ORDER=['ln','noFill','solidFill','gradFill','blipFill','pattFill','grpFill','effectLst','effectDag','highlight','uLnTx','uLn','uFillTx','uFill','latin','ea','cs','sym','hlinkClick','hlinkMouseOver','rtl','extLst'];
+const SKIPA=new Set(['lang','altLang','dirty','err','smtClean','noProof']);
+function setFaces(rp,font){
+ const d=rp.ownerDocument;
+ for(const tag of ['latin','ea','cs']){
+  let el=kids(rp,tag)[0];
+  if(!el){el=d.createElementNS(A_NS,'a:'+tag);
+   const ix=DML_ORDER.indexOf(tag),nx=[...rp.children].find(c=>DML_ORDER.indexOf(c.localName)>ix);
+   rp.insertBefore(el,nx||null)}
+  for(const a of [...el.attributes])el.removeAttribute(a.name);
+  el.setAttribute('typeface',font);
+ }
+}
+async function themeFonts(z){
+ const n=Object.keys(z.files).find(x=>/theme\/theme1\.xml$/.test(x));
+ if(!n)return{maj:'',min:''};
+ const s=await z.file(n).async('string');
+ const g=k=>{const m=s.match(new RegExp('<a:'+k+'Font>\\s*<a:latin[^>]*typeface="([^"]*)"'));return m?m[1]:''};
+ return{maj:g('major'),min:g('minor')};
+}
+function procDML(d,f,t,o){
+ const font=FONT[t];let any=false;
+ const typeOf=rp=>{const l=rp?kids(rp,'latin')[0]:null;return l?(l.getAttribute('typeface')||''):''};
+ const th=tf=>tf==='+mn-lt'?o.theme.min:tf==='+mj-lt'?o.theme.maj:tf.charAt(0)==='+'?'':tf;
+ const opt={font,strict:o.strict,space:false,
+  fontOf:tk=>{
+   let fn=typeOf(getChild(tk.r,'rPr'));if(fn)return th(fn);
+   const p=tk.r.parentNode,pp=getChild(p,'pPr'),lv=((pp&&+pp.getAttribute('lvl'))||0)+1,ls=getChild(p.parentNode,'lstStyle');
+   if(ls){const lp=getChild(ls,'lvl'+lv+'pPr')||getChild(ls,'lvl1pPr');fn=typeOf(getChild(lp,'defRPr'));if(fn)return th(fn)}
+   return o.defFont||'';
+  },
+  sigOf:tk=>{const rp=getChild(tk.r,'rPr');if(!rp)return '';let s='';
+   for(const a of rp.attributes)if(!SKIPA.has(a.name))s+=a.name+'='+a.value+';';
+   for(const c of rp.children)if(!['latin','ea','cs','sym'].includes(c.localName))s+=new XMLSerializer().serializeToString(c);
+   return s},
+  onRun:tk=>{let rp=getChild(tk.r,'rPr');
+   if(!rp){rp=d.createElementNS(A_NS,'a:rPr');tk.r.insertBefore(rp,tk.r.firstChild)}
+   setFaces(rp,font)}};
+ for(const p of d.getElementsByTagNameNS(A_NS,'p')){
+  const toks=[];
+  for(const ch of p.children){const ln=ch.localName;
+   if(ln==='r'){const te=getChild(ch,'t');if(te)toks.push({type:'t',t:te,r:ch})}
+   else if(ln==='br'||ln==='fld')toks.push({type:'brk'})}
+  if(convGroups(toks,f,t,opt)){any=true;const ep=getChild(p,'endParaRPr');if(ep)setFaces(ep,font)}
+ }
+ return any;
+}
+function procChart(d,f,t,any){
+ const font=FONT[t];
+ const legFont=LEG.includes(f)&&[...d.getElementsByTagNameNS(A_NS,'latin')].some(e=>PRE_F.test(e.getAttribute('typeface')||''));
+ let did=any;
+ for(const sc of d.getElementsByTagNameNS(C_NS,'strCache'))for(const v of sc.getElementsByTagNameNS(C_NS,'v')){
+  const tx=v.textContent;if(!tx.trim())continue;
+  if(f==='uni'?!DEVN.test(tx):!legFont)continue;
+  v.textContent=conv(tx,f,t);did=true;
+ }
+ if(did)for(const tag of ['latin','ea','cs'])for(const e of d.getElementsByTagNameNS(A_NS,tag))e.setAttribute('typeface',font);
+ return did;
+}
+
+/* ---------- PowerPoint ---------- */
+async function procPptx(z,f,t){
+ const theme=await themeFonts(z);let defFont=theme.min,count=0;
+ if(LEG.includes(f)){
+  for(const n of Object.keys(z.files).filter(x=>/^ppt\/(slideMasters|slideLayouts)\/[^\/]+\.xml$/.test(x))){
+   const s=await z.file(n).async('string');
+   const m=[...s.matchAll(/<a:latin[^>]*typeface="([^"]+)"/g)].map(x=>x[1]).find(x=>PRE_F.test(x));
+   if(m){defFont=m;break}
+  }
+ }
+ const names=Object.keys(z.files).filter(n=>/^ppt\/(slides\/slide|notesSlides\/notesSlide|slideLayouts\/slideLayout|slideMasters\/slideMaster|notesMasters\/notesMaster|handoutMasters\/handoutMaster|charts\/chart|diagrams\/data|diagrams\/drawing)\d+\.xml$/.test(n));
+ for(const n of names){
+  const d=xparse(await z.file(n).async('string'));
+  const strict=/\/(slideLayouts|slideMasters|notesMasters|handoutMasters)\//.test(n);
+  let any=procDML(d,f,t,{theme,defFont,strict});
+  if(/\/charts\//.test(n))any=procChart(d,f,t,any);
+  if(any){z.file(n,xser(d));count++}
+ }
+ return count;
+}
+async function previewPptx(z){
+ const out=[];
+ for(const n of byNum(z,/^ppt\/slides\/slide\d+\.xml$/)){
+  const d=xparse(await z.file(n).async('string')),ls=[];
+  for(const p of d.getElementsByTagNameNS(A_NS,'p')){
+   let s='';
+   for(const ch of p.children){
+    if(ch.localName==='r'){const te=getChild(ch,'t');if(te)s+=te.textContent}
+    else if(ch.localName==='br')s+='\n';
+   }
+   if(s.trim())ls.push(s);
+  }
+  out.push(ls.join('\n'));
+ }
+ return out.join('\n\n').trim();
+}
+
+/* ---------- Excel ---------- */
+const sstTokens=si=>{
+ const rs=kids(si,'r');
+ if(rs.length)return rs.map(r=>({type:'t',t:kids(r,'t')[0],r})).filter(x=>x.t);
+ const te=kids(si,'t')[0];return te?[{type:'t',t:te,r:null}]:[];
+};
+const plainSi=si=>[...si.getElementsByTagNameNS(S_NS,'t')].filter(e=>e.parentNode.localName!=='rPh').map(e=>e.textContent).join('');
+async function procXlsx(z,f,t){
+ const font=FONT[t],theme=await themeFonts(z);let count=0;
+ const sheets=[];
+ for(const n of byNum(z,/^xl\/worksheets\/sheet\d+\.xml$/))sheets.push({n,d:xparse(await z.file(n).async('string'))});
+ const sf=z.file('xl/styles.xml'),sd=sf?xparse(await sf.async('string')):null;
+ const fontsEl=sd&&sd.getElementsByTagNameNS(S_NS,'fonts')[0],xfsEl=sd&&sd.getElementsByTagNameNS(S_NS,'cellXfs')[0];
+ const fonts=fontsEl?kids(fontsEl,'font'):[],xfs=xfsEl?kids(xfsEl,'xf'):[];
+ const fname=s=>{const xf=xfs[s]||xfs[0];if(!xf)return '';const fo=fonts[+xf.getAttribute('fontId')||0],nm=fo&&kids(fo,'name')[0];return nm?(nm.getAttribute('val')||''):''};
+ /* A cell whose text is converted gets a cloned style identical in every way (size, colour, borders, fill, alignment, number format) except the font name */
+ const sc=new Map();
+ const styleFor=o=>{
+  if(!xfsEl||!fontsEl||!fonts.length)return o;
+  if(sc.has(o))return sc.get(o);
+  const xf=xfs[o]||xfs[0];if(!xf)return o;
+  const nf=(fonts[+xf.getAttribute('fontId')||0]||fonts[0]).cloneNode(true);
+  let nm=kids(nf,'name')[0];if(!nm){nm=sd.createElementNS(S_NS,'name');nf.appendChild(nm)}
+  nm.setAttribute('val',font);
+  for(const g of ['scheme','charset','family'])kids(nf,g).forEach(e=>nf.removeChild(e));
+  fontsEl.appendChild(nf);fonts.push(nf);fontsEl.setAttribute('count',fonts.length);
+  const nx=xf.cloneNode(true);nx.setAttribute('fontId',fonts.length-1);nx.setAttribute('applyFont','1');
+  xfsEl.appendChild(nx);xfs.push(nx);xfsEl.setAttribute('count',xfs.length);
+  sc.set(o,xfs.length-1);return xfs.length-1;
+ };
+ const cellFont=new Map();
+ for(const sh of sheets)for(const c of sh.d.getElementsByTagNameNS(S_NS,'c')){
+  if(c.getAttribute('t')!=='s')continue;
+  const v=getChild(c,'v');if(!v)continue;
+  const i=+v.textContent;if(!cellFont.has(i))cellFont.set(i,fname(+c.getAttribute('s')||0));
+ }
+ const xo=(cf,strict)=>({font,strict,space:true,
+  fontOf:tk=>{const rp=tk.r&&getChild(tk.r,'rPr'),rf=rp&&kids(rp,'rFont')[0];return (rf&&rf.getAttribute('val'))||cf||''},
+  sigOf:tk=>{const rp=tk.r&&getChild(tk.r,'rPr');if(!rp)return '';let s='';
+   for(const c of rp.children)if(!['rFont','scheme','charset','family'].includes(c.localName))s+=new XMLSerializer().serializeToString(c);return s},
+  onRun:tk=>{const rp=tk.r&&getChild(tk.r,'rPr');if(!rp)return;
+   let rf=kids(rp,'rFont')[0];if(!rf){rf=rp.ownerDocument.createElementNS(S_NS,'rFont');rp.insertBefore(rf,rp.firstChild)}
+   rf.setAttribute('val',font);for(const g of ['scheme','family','charset'])kids(rp,g).forEach(e=>rp.removeChild(e))}});
+ const joined=toks=>toks.map(x=>x.t.textContent).join('');
+ const strMap=new Map(),convIdx=new Set();
+ const sstF=z.file('xl/sharedStrings.xml');let sstD=null;
+ if(sstF){
+  sstD=xparse(await sstF.async('string'));
+  kids(sstD.documentElement,'si').forEach((si,i)=>{
+   const tk=sstTokens(si),before=joined(tk);
+   if(convGroups(tk,f,t,xo(cellFont.get(i),false))){convIdx.add(i);strMap.set(before,joined(tk))}
+  });
+ }
+ for(const sh of sheets){
+  let ch=false;
+  for(const c of sh.d.getElementsByTagNameNS(S_NS,'c')){
+   const ty=c.getAttribute('t'),s0=+c.getAttribute('s')||0;let hit=false;
+   if(ty==='s'){const v=getChild(c,'v');hit=!!v&&convIdx.has(+v.textContent)}
+   else if(ty==='inlineStr'){const is=getChild(c,'is');
+    if(is){const tk=sstTokens(is),before=joined(tk);hit=convGroups(tk,f,t,xo(fname(s0),false));if(hit)strMap.set(before,joined(tk))}}
+   if(hit){c.setAttribute('s',styleFor(s0));ch=true}
+  }
+  if(ch){z.file(sh.n,xser(sh.d));count++}
+ }
+ if(convIdx.size)z.file('xl/sharedStrings.xml',xser(sstD));
+ if(sc.size)z.file('xl/styles.xml',xser(sd));
+ /* Comments / notes */
+ for(const n of Object.keys(z.files).filter(x=>/^xl\/comments\d*\.xml$/.test(x))){
+  const d=xparse(await z.file(n).async('string'));let any=false;
+  for(const tx of d.getElementsByTagNameNS(S_NS,'text'))if(convGroups(sstTokens(tx),f,t,xo('',true)))any=true;
+  if(any){z.file(n,xser(d));count++}
+ }
+ /* Text boxes, shapes and charts */
+ for(const n of Object.keys(z.files).filter(x=>/^xl\/(drawings\/drawing|charts\/chart)\d+\.xml$/.test(x))){
+  const d=xparse(await z.file(n).async('string'));
+  let any=procDML(d,f,t,{theme,defFont:theme.min,strict:false});
+  if(/\/charts\//.test(n))any=procChart(d,f,t,any);
+  if(any){z.file(n,xser(d));count++}
+ }
+ /* Excel tables: column names must always equal the header cell text, or Excel reports a corrupt file */
+ for(const n of Object.keys(z.files).filter(x=>/^xl\/tables\/table\d+\.xml$/.test(x))){
+  const d=xparse(await z.file(n).async('string'));let any=false;
+  for(const c of d.getElementsByTagNameNS(S_NS,'tableColumn')){
+   const nm=c.getAttribute('name')||'';
+   if(strMap.has(nm)&&strMap.get(nm)!==nm){c.setAttribute('name',strMap.get(nm));any=true}
+  }
+  if(any)z.file(n,xser(d));
+ }
+ return count;
+}
+async function previewXlsx(z){
+ const sst=[],sf=z.file('xl/sharedStrings.xml');
+ if(sf)kids(xparse(await sf.async('string')).documentElement,'si').forEach(si=>sst.push(plainSi(si)));
+ const out=[];let rows=0;
+ for(const n of byNum(z,/^xl\/worksheets\/sheet\d+\.xml$/)){
+  const d=xparse(await z.file(n).async('string'));
+  for(const r of d.getElementsByTagNameNS(S_NS,'row')){
+   const cells=[];
+   for(const c of kids(r,'c')){
+    const ty=c.getAttribute('t');let s='';
+    if(ty==='s'){const v=getChild(c,'v');s=v?(sst[+v.textContent]||''):''}
+    else if(ty==='inlineStr'){const is=getChild(c,'is');s=is?plainSi(is):''}
+    if(s)cells.push(s);
+   }
+   if(cells.length){out.push(cells.join('\t'));if(++rows>=400)break}
+  }
+  out.push('');if(rows>=400)break;
+ }
+ return out.join('\n').trim();
+}
+
+/* ---------- Text files (.txt .csv .tsv) ---------- */
+function decodeTxt(buf){
+ const b=new Uint8Array(buf);
+ if(b[0]===0xFF&&b[1]===0xFE)return new TextDecoder('utf-16le').decode(b.subarray(2));
+ if(b[0]===0xFE&&b[1]===0xFF)return new TextDecoder('utf-16be').decode(b.subarray(2));
+ try{return new TextDecoder('utf-8',{fatal:true}).decode(b)}
+ catch(e){return new TextDecoder('windows-1252').decode(b)}   /* legacy Preeti .txt files are usually saved as ANSI */
+}
+let CP=null;
+function encodeTxt(s,t){
+ const utf8=()=>{const e=new TextEncoder().encode(s),o=new Uint8Array(e.length+3);o.set([0xEF,0xBB,0xBF]);o.set(e,3);return{data:o,enc:'UTF-8'}};
+ if(t==='uni')return utf8();
+ if(!CP){CP=new Map();const dc=new TextDecoder('windows-1252');for(let i=128;i<256;i++)CP.set(dc.decode(new Uint8Array([i])),i)}
+ const o=new Uint8Array(s.length);let n=0;
+ for(const ch of s){const c=ch.codePointAt(0);if(c<128)o[n++]=c;else if(CP.has(ch))o[n++]=CP.get(ch);else return utf8()}
+ return{data:o.subarray(0,n),enc:'ANSI'};
+}
+
+/* ---------- Upload / convert / download ---------- */
+const extOf=n=>(n.split('.').pop()||'').toLowerCase();
+async function convertFile(buf,ext,f,t){
+ if(TXTX.includes(ext)){
+  const r=encodeTxt(conv(decodeTxt(buf),f,t),t);
+  return{blob:new Blob([r.data],{type:MIME[ext]}),n:null,enc:r.enc};
+ }
+ if(typeof JSZip==='undefined')await loadJSZip();
+ if(ext==='docx')return{blob:await procDocx(buf,f,t),n:null};
+ const z=await JSZip.loadAsync(buf);
+ const n=ext==='xlsx'?await procXlsx(z,f,t):await procPptx(z,f,t);
+ return{blob:await z.generateAsync({type:'blob',mimeType:MIME[ext],compression:'DEFLATE'}),n};
+}
+$('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ const ext=extOf(f.name);
+ try{
+  if(['doc','xls','ppt'].includes(ext)){$('st').textContent='Old .'+ext+' files cannot be read. Open it in Office, choose Save As .'+ext+'x, then upload that.';e.target.value='';return}
+  if(!['docx','xlsx','pptx'].concat(TXTX).includes(ext))throw new Error('type');
+  const buf=await f.arrayBuffer();let prev='',info='';
+  if(TXTX.includes(ext)){prev=decodeTxt(buf);if(prev.length>100000){prev=prev.slice(0,100000);info=' Preview shows the first 100,000 characters; Download converts everything.'}}
+  else{
+   if(typeof JSZip==='undefined')await loadJSZip();
+   const z=await JSZip.loadAsync(buf);
+   prev=ext==='docx'?await previewDocx(buf):ext==='xlsx'?await previewXlsx(z):await previewPptx(z);
+   if(ext==='xlsx'&&prev.split('\n').length>=400)info=' Preview shows the first rows only; Download converts the whole workbook.';
+  }
+  let dm='';if($('autodet').checked){try{dm=applyDetect(await detectFonts(buf,ext))}catch(e){}}
+  docBuf=buf;docName=f.name;$('in').value=prev;run();
+  $('st').textContent='Loaded '+f.name+'. '+(dm?dm+' ':'')+'Download converts the whole file and keeps its layout, breaks and formatting.'+info;
+ }catch(err){docBuf=null;$('st').textContent='Could not read that file. Use .docx, .xlsx, .pptx, .txt, .csv or .tsv.'}
+ e.target.value='';};
+$('dl').onclick=async()=>{
+ const f=fromS.value,t=toS.value;
+ try{
+  if(!docBuf&&!$('out').value.trim()){$('st').textContent='Nothing to download yet. Enter text or upload a file first.';return}
+  $('st').textContent='Preparing file…';
+  let blob,name,extra='';
+  if(docBuf){
+   const ext=extOf(docName);REC=new Map();let r,rec;try{r=await convertFile(docBuf,ext,f,t)}finally{rec=REC;REC=null}makeReport(rec,f,t,docName);
+   blob=r.blob;name=docName.replace(/\.[^.]+$/,'')+'-'+t+'.'+ext;
+   if(r.n===0)extra=' No text matching the From setting was found, so nothing was changed. Check the From font.';
+   if(r.enc==='ANSI')extra=' Saved as ANSI so legacy apps read it; set the text font to '+FONT[t]+' to view it.';
+  }else{
+   if(typeof JSZip==='undefined')await loadJSZip();
+   blob=await buildDocx($('out').value,FONT[t]);name='nepali-text-'+t+'.docx';
+  }
+  await saveFile(name,blob,blob.type);
+  $('st').textContent='Saved '+name+'.'+extra+(docBuf?' The original-vs-converted report is ready under Quality checks.':'');
+ }catch(err){const c=err&&err.code,m=err&&err.message;$('st').textContent=c==='declined'?'Download cancelled.':'Download failed: '+(c||'')+' '+(m||String(err))}
+};
+$('dltxt').onclick=async()=>{
+ if(docBuf&&TXTX.includes(extOf(docName))){$('dl').onclick();return}
+ const t=toS.value,s=$('out').value;
+ try{
+  if(!s.trim()){$('st').textContent='Nothing to download yet.';return}
+  const r=encodeTxt(s.replace(/\r?\n/g,'\r\n'),t),name='nepali-text-'+t+'.txt';
+  await saveFile(name,new Blob([r.data],{type:MIME.txt}),MIME.txt);
+  $('st').textContent='Saved '+name+(r.enc==='ANSI'?' (ANSI; set the text font to '+FONT[t]+' to view it).':'.');
+ }catch(err){$('st').textContent=err&&err.code==='declined'?'Download cancelled.':'Download failed: '+((err&&(err.code||err.message))||err)}
+};
+
+/* Saved fixes & rules */
+const msg=m=>{$('fxmsg').textContent=m};
+function renderFixes(){const b=$('fixlist');b.innerHTML='';
+ const add=(label,del)=>{const r=document.createElement('div');r.className='fx';const sp=document.createElement('span');sp.textContent=label;const x=document.createElement('button');x.textContent='\u00d7';x.title='Delete';x.onclick=()=>{del();saveFx();run()};r.append(sp,x);b.append(r)};
+ Object.keys(fx).slice(0,300).forEach(k=>{const i=k.indexOf('|'),d=k.slice(0,i),w=k.slice(i+1);add('['+d.replace('>','\u2192')+'] '+w+'  \u2192  '+fx[k],()=>delete fx[k])});
+ rules.forEach((r,i)=>add('[rule '+r.d.replace('>','\u2192')+', '+(r.s==='out'?'output':'input')+'] '+r.f+'  \u2192  '+r.r,()=>rules.splice(i,1)));
+ if(!b.children.length)b.innerHTML='<p class="st">No saved fixes yet.</p>'}
+$('radd').onclick=()=>{const f=$('rf').value;if(!f){msg('Type the text to find.');return}
+ rules.push({d:NL(fromS.value)+'>'+NL(toS.value),s:$('rs').value,f,r:$('rr').value});saveFx();$('rf').value=$('rr').value='';run();msg('Rule saved for '+NL(fromS.value)+' \u2192 '+NL(toS.value)+'.')};
+$('svedits').onclick=()=>{const f=fromS.value,t=toS.value,tk=x=>x.split(/\s+/).filter(Boolean);
+ const ins=tk($('in').value),cur=tk(conv($('in').value,f,t)),ed=tk($('out').value);
+ if(ed.length!==cur.length||ins.length!==cur.length){msg('Your edit changed the number of words, so it cannot be matched. Fix words one by one in the list above, or add a rule.');return}
+ let n=0;ed.forEach((e,i)=>{if(e!==cur[i]){fx[fk(f,t,ins[i])]=e;n++}});saveFx();run();msg(n?n+' fix(es) saved and applied.':'No changes found in the output.')};
+$('fxexp').onclick=async()=>{try{await saveFile('nepali-converter-fixes.json',JSON.stringify({fixes:fx,rules},null,1),'application/json');msg('Fixes exported.')}catch(e){msg(e&&e.code==='declined'?'Export cancelled.':'Export failed: '+(e&&(e.code||e.message)||e))}};
+$('fximp').onclick=()=>$('fxfile').click();
+$('fxfile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());let n=0;
+ for(const k in (j.fixes||{})){if(typeof j.fixes[k]==='string'){fx[k]=j.fixes[k];n++}}
+ for(const r of (j.rules||[]))if(r&&r.f&&r.d&&!rules.some(x=>x.d===r.d&&x.s===r.s&&x.f===r.f)){rules.push({d:r.d,s:r.s==='src'?'src':'out',f:String(r.f),r:String(r.r||'')});n++}
+ saveFx();run();msg(n+' item(s) imported.')}catch(err){msg('That file is not a valid fixes file.')}e.target.value=''};
+/* Typing guide */
+function buildGuide(){
+ const dr=$('dr');const cons='कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह'.split('');
+ const sec=(t,items,kind)=>'<h3>'+t+'</h3><div class="g">'+items.map(x=>{
+  const u=kind==='h'?x+'\u094D':x;
+  return '<div class="k" data-u="'+u+'"><b class="dev">'+u+'</b><span><code>'+esc(u2p(u))+'</code></span></div>'}).join('')+'</div>';
+ const vow='अआइईउऊऋएऐओऔ'.split(''),mat=['का','कि','की','कु','कू','कृ','के','कै','को','कौ','कं','कँ','कः'];
+ const conj=['क्ष','त्र','ज्ञ','श्र','त्त','द्य','द्द','द्ध','द्व','ट्ट','ठ्ठ','क्र','प्र','र्म','र्क','ङ्ग','न्न','स्त'];
+ const dig='०१२३४५६७८९'.split('');
+ dr.innerHTML='<div class="bar"><b style="flex:1">Typing guide \u2013 Preeti key</b><button id="drx">Close</button></div>'+
+ '<p class="st">Tap any box to add its key to the input (From style).</p>'+
+ '<h3>Quick tips</h3><ul><li>Capital letters in Preeti are half letters: <code>S</code> = क्, <code>G</code> = न्. Half letter + <code>f</code> makes the full letter again.</li><li><code>l</code> (ि) is typed BEFORE the letter: <code>lstfa</code> = किताब.</li><li><code>{</code> (reph) is typed AFTER the letter it sits on: <code>wd{</code> = धर्म.</li><li><code>|</code> = ्र (ra-kar), <code>\\</code> = halant, <code>]</code> = े, <code>f]</code> = ो, <code>}</code> = ै, <code>f}</code> = ौ, <code>+</code> = ं, <code>F</code> = ँ.</li><li>Kantipur, Himali, Sagarmatha and Kanchan use the same key positions.</li></ul>'+
+ sec('Vowels',vow,'v')+sec('Matras (shown on क)',mat,'m')+sec('Consonants',cons,'c')+sec('Half letters (with halant)',cons.filter(c=>PH[c]||c==='ङ'||c==='र'),'h')+sec('Conjuncts',conj,'j')+sec('Digits',dig,'d')+
+ '<h3>Practice words</h3><div class="g">'+['नमस्ते','नेपाल','किताब','धर्म','क्षेत्र','विद्यालय','आमा','पत्रिका'].map(w=>'<div class="k" data-u="'+w+'"><b class="dev">'+w+'</b><span><code>'+esc(u2p(w))+'</code></span></div>').join('')+'</div>';
+ dr.querySelectorAll('.k').forEach(k=>k.onclick=()=>{const u=k.dataset.u;
+  $('in').value+=fromS.value==='uni'?u:u2p(u);docBuf=null;run()});
+ $('drx').onclick=()=>dr.classList.remove('on');
+}
+$('guide').onclick=()=>{const dr=$('dr');if(!dr.innerHTML)buildGuide();dr.classList.toggle('on')};
+/* ===== Quality tools: font auto-detect, suspicious words, spelling, rule check, report ===== */
+const FAM=[['pre',/preeti/i],['kan',/kantipur/i],['him',/himal|fantasy|fontasy/i],['sag',/sagarmatha/i],['kch',/kanchan/i],['uni',/mangal|nirmala|devanagari|kokila|aparajita|utsaah|sakal|samanata|lohit|annapurna|mukta|\bhind\b|arial unicode/i]];
+const famOf=n=>{for(const [k,re] of FAM)if(re.test(n||''))return k;return ''};
+const addW=(m,k,n)=>{if(k&&n>0)m.set(k,(m.get(k)||0)+n)};
+/* Devanagari text always counts as Unicode; Latin text counts as the legacy family of its font */
+const classify=(font,tx)=>{if(DEVN.test(tx))return 'uni';if(!/[A-Za-z]/.test(tx))return '';const k=famOf(font);return k==='uni'?'other':(k||'other')};
+function textDetect(tx,m){
+ const dev=(tx.match(/[\u0900-\u097F]/g)||[]).length;addW(m,'uni',dev);
+ const toks=tx.split(/\s+/).filter(x=>/[A-Za-z]/.test(x)&&!DEVN.test(x)&&!/@|:\/\/|\.(com|org|np|net)\b/i.test(x));
+ const leg=toks.filter(x=>/[\]\[{};|\\]/.test(x)||/[a-z][A-Z]/.test(x));
+ const len=toks.reduce((a,x)=>a+x.length,0);
+ if(toks.length>=3&&leg.length/toks.length>=0.15&&leg.length>=2)addW(m,'pre',len);else addW(m,'other',len);
+}
+async function detectFonts(buf,ext){
+ const m=new Map();let generic=false;
+ if(TXTX.includes(ext)){textDetect(decodeTxt(buf),m);generic=true}
+ else{
+  const z=await JSZip.loadAsync(buf);
+  if(ext==='docx'){
+   const info=await parseStyleFonts(z),d=xparse(await z.file('word/document.xml').async('string'));
+   for(const r of d.getElementsByTagNameNS(W,'r')){
+    let tx='';for(const c of r.children)if(c.localName==='t')tx+=c.textContent;
+    if(!tx.trim())continue;
+    let p=r.parentNode;while(p&&p.localName!=='p')p=p.parentNode;
+    addW(m,classify(resolveRunFont(r,p||r.parentNode,info),tx),tx.length);
+   }
+  }else if(ext==='xlsx'){
+   const sf=z.file('xl/styles.xml'),sd=sf?xparse(await sf.async('string')):null;
+   const fontsEl=sd&&sd.getElementsByTagNameNS(S_NS,'fonts')[0],xfsEl=sd&&sd.getElementsByTagNameNS(S_NS,'cellXfs')[0];
+   const fonts=fontsEl?kids(fontsEl,'font'):[],xfs=xfsEl?kids(xfsEl,'xf'):[];
+   const fname=s=>{const xf=xfs[s]||xfs[0];if(!xf)return '';const fo=fonts[+xf.getAttribute('fontId')||0],nm=fo&&kids(fo,'name')[0];return nm?(nm.getAttribute('val')||''):''};
+   const sst=[],ssf=z.file('xl/sharedStrings.xml');
+   if(ssf)kids(xparse(await ssf.async('string')).documentElement,'si').forEach(si=>sst.push(plainSi(si)));
+   for(const n of byNum(z,/^xl\/worksheets\/sheet\d+\.xml$/)){
+    const d=xparse(await z.file(n).async('string'));
+    for(const c of d.getElementsByTagNameNS(S_NS,'c')){
+     const ty=c.getAttribute('t');let tx='';
+     if(ty==='s'){const v=getChild(c,'v');tx=v?(sst[+v.textContent]||''):''}
+     else if(ty==='inlineStr'){const is=getChild(c,'is');tx=is?plainSi(is):''}
+     if(tx.trim())addW(m,classify(fname(+c.getAttribute('s')||0),tx),tx.length);
+    }
+   }
+  }else{
+   const theme=await themeFonts(z);
+   for(const n of byNum(z,/^ppt\/slides\/slide\d+\.xml$/)){
+    const d=xparse(await z.file(n).async('string'));
+    for(const r of d.getElementsByTagNameNS(A_NS,'r')){
+     const te=getChild(r,'t'),tx=te?te.textContent:'';if(!tx.trim())continue;
+     const l=getChild(getChild(r,'rPr'),'latin');let fn=l?(l.getAttribute('typeface')||''):'';
+     if(fn==='+mn-lt')fn=theme.min;else if(fn==='+mj-lt')fn=theme.maj;else if(fn.charAt(0)==='+')fn='';
+     addW(m,classify(fn||theme.min,tx),tx.length);
+    }
+   }
+  }
+ }
+ const nep=['pre','kan','him','sag','kch','uni'].map(k=>[k,m.get(k)||0]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+ const sum=nep.reduce((a,x)=>a+x[1],0);
+ return nep.length?{key:nep[0][0],pct:Math.round(100*nep[0][1]/sum),second:nep[1]?[nep[1][0],Math.round(100*nep[1][1]/sum)]:null,generic}:{key:''};
+}
+function applyDetect(det){
+ if(!det.key)return 'No Nepali text or font found, so From was left as it is.';
+ let from=det.key;
+ if(det.generic&&from!=='uni'&&LEG.includes(fromS.value))from=fromS.value;
+ fromS.value=from;
+ if(toS.value===from)toS.value=from==='uni'?'pre':'uni';
+ const nm=n=>n==='uni'?'Unicode':NM[n];
+ let msg='Detected '+nm(det.key)+' ('+det.pct+'% of the Nepali text); From set to '+nm(from)+'.';
+ if(det.second&&det.second[1]>=15)msg+=' It also contains '+nm(det.second[0])+' ('+det.second[1]+'%), which will be left alone or mis-converted: check the result.';
+ return msg;
+}
+$('det').onclick=async()=>{
+ try{
+  let det;
+  if(docBuf){const ext=extOf(docName);if(!TXTX.includes(ext)&&typeof JSZip==='undefined')await loadJSZip();det=await detectFonts(docBuf,ext)}
+  else{const m=new Map();textDetect($('in').value,m);const nep=['pre','uni'].map(k=>[k,m.get(k)||0]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);const sum=nep.reduce((a,x)=>a+x[1],0);det=nep.length?{key:nep[0][0],pct:Math.round(100*nep[0][1]/sum),second:nep[1]?[nep[1][0],Math.round(100*nep[1][1]/sum)]:null,generic:true}:{key:''}}
+  $('st').textContent=applyDetect(det);run();
+ }catch(e){$('st').textContent='Could not detect the font.'}
+};
+$('in').addEventListener('paste',()=>setTimeout(()=>{
+ if(!$('autodet').checked)return;
+ const m=new Map();textDetect($('in').value,m);
+ const nep=['pre','uni'].map(k=>[k,m.get(k)||0]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+ if(!nep.length)return;const sum=nep.reduce((a,x)=>a+x[1],0);
+ $('st').textContent=applyDetect({key:nep[0][0],pct:Math.round(100*nep[0][1]/sum),second:nep[1]?[nep[1][0],Math.round(100*nep[1][1]/sum)]:null,generic:true});run();
+},0));
+
+/* ---------- Suspicious-word flags ---------- */
+const OK_HAL=/(?:त्|[वम]ान्)$/;
+function analyze(src,out,f,t){
+ const fl=[];if(f===t)return fl;
+ if(LEG.includes(f)){
+  const bad=[...new Set([...src].filter(ch=>ch.charCodeAt(0)>127&&!P[ch]&&!/[\u0900-\u097F\u2013\u2014\u2026\u2022\u00A0\u00B0\u00A9]/.test(ch)))];
+  if(bad.length)fl.push({k:'err',m:'Unknown font glyph '+bad.join(' ')+' was not converted'});
+ }
+ if(out===src)return fl;
+ if(t==='uni'){
+  if(/[\uE000-\uE002]/.test(out))fl.push({k:'err',m:'Unprocessed marker left (reph or ikar not placed)'});
+  const w=out.replace(/^[^\u0900-\u097F\w]+/,'').replace(/[^\u0900-\u097F\w]+$/,'');
+  if(DEVN.test(w)){
+   if(/^[\u093E-\u094D\u0901-\u0903]/.test(w))fl.push({k:'err',m:'Starts with a vowel sign or halant'});
+   if(/[\u093E-\u094C]{2}/.test(w))fl.push({k:'err',m:'Two vowel signs in a row'});
+   if(/\u094D[\u093E-\u094C\u0901-\u0903]/.test(w))fl.push({k:'err',m:'Halant followed by a vowel sign'});
+   if(/[A-Za-z]/.test(w))fl.push({k:'err',m:'Mixed English and Nepali letters (unconverted glyph?)'});
+   if(/[{}|\\~`^\[\]]/.test(w))fl.push({k:'err',m:'Leftover keyboard symbol'});
+   if(/र\u094D$/.test(w))fl.push({k:'chk',m:'Ends with a dangling र् (reph)'});
+   else if(/^[\u0915-\u0939]\u094D$/.test(w))fl.push({k:'chk',m:'Lone half letter'});
+   else if(/\u094D$/.test(w)&&!OK_HAL.test(w))fl.push({k:'chk',m:'Ends with a half letter (halant): check the spelling'});
+  }
+ }else if(LEG.includes(t)&&DEVN.test(out))fl.push({k:'err',m:'Some Nepali characters could not be converted'});
+ return fl;
+}
+
+/* ---------- Spelling-variant warnings (Unicode output) ---------- */
+const SPELL_PAIRS=[['चिन्ह','चिह्न'],['ब्रम्ह','ब्रह्म'],['ब्रम्हा','ब्रह्मा'],['ब्राम्हण','ब्राह्मण'],['ब्रम्हाण्ड','ब्रह्माण्ड'],['उज्वल','उज्ज्वल'],['उज्जवल','उज्ज्वल'],['अत्याधिक','अत्यधिक'],['अन्तराष्ट्रिय','अन्तर्राष्ट्रिय'],['अन्तरास्ट्रिय','अन्तर्राष्ट्रिय'],['पुरूष','पुरुष'],['गुरू','गुरु'],['परिक्षा','परीक्षा'],['परिक्षण','परीक्षण'],['समिक्षा','समीक्षा'],['प्रतिक्षा','प्रतीक्षा'],['निरिक्षण','निरीक्षण'],['सुचना','सूचना'],['सुचि','सूची'],['सूचि','सूची'],['कार्यलय','कार्यालय'],['शुरु','सुरु'],['शुरू','सुरु'],['सुरू','सुरु'],['उर्जा','ऊर्जा'],['द्बारा','द्वारा'],['बर्ष','वर्ष'],['ब्यवस्था','व्यवस्था'],['ब्यक्ति','व्यक्ति'],['ब्यापार','व्यापार'],['ब्यवसाय','व्यवसाय'],['बिभाग','विभाग'],['बिकास','विकास'],['बिद्यालय','विद्यालय'],['बिद्यार्थी','विद्यार्थी'],['बिषय','विषय'],['बिवरण','विवरण'],['अन्तरगत','अन्तर्गत'],['अनुसुची','अनुसूची'],['उद्धेश्य','उद्देश्य'],['विश्लेषन','विश्लेषण'],['स्विकार','स्वीकार'],['स्विकृत','स्वीकृत'],['स्थानिय','स्थानीय'],['उत्कृष्ठ','उत्कृष्ट'],['जेष्ठ','ज्येष्ठ'],['पुजा','पूजा'],['सम्वन्ध','सम्बन्ध'],['श्रृंखला','शृङ्खला'],['श्रृङ्खला','शृङ्खला'],['आवस्यकता','आवश्यकता'],['धन्यबाद','धन्यवाद'],['सुभकामना','शुभकामना'],['विद्यार्थि','विद्यार्थी'],['कर्मचारि','कर्मचारी'],['अधिकारि','अधिकारी'],['जानकारि','जानकारी'],['नेपालि','नेपाली']];
+const SPELL=new Map(SPELL_PAIRS);
+const SPSUF=new Set(['','ले','को','का','की','मा','लाई','बाट','सँग','देखि','नै','पनि','हरू','हरु','हरूले','हरुले','हरूको','हरुको','हरूलाई','हरुलाई','हरूमा','हरुमा','हरूबाट','हरुबाट']);
+function spell(out,t){
+ if(t!=='uni')return null;
+ const m=out.match(/^([^\u0900-\u097F]*)([\u0900-\u0963\u0965-\u097F]+)([\s\S]*)$/);if(!m)return null;
+ const pre=m[1],core=m[2],post=m[3];let fixed=core;
+ for(let k=core.length;k>=3;k--){const b=core.slice(0,k);if(SPELL.has(b)&&SPSUF.has(core.slice(k))){fixed=SPELL.get(b)+core.slice(k);break}}
+ const i=fixed.indexOf('हरु');if(i>0)fixed=fixed.slice(0,i)+'हरू'+fixed.slice(i+3);
+ return fixed!==core?{from:core,to:pre+fixed+post,word:fixed}:null;
+}
+
+/* ---------- Original-vs-converted report ---------- */
+let REC=null,lastReport=null;
+function convTok(w,f,t){const r=convTok0(w,f,t);if(REC){const e=REC.get(w);if(e)e.n++;else if(REC.size<60000)REC.set(w,{o:r,n:1})}return r}
+function makeReport(rec,f,t,name){
+ const rows=[];let total=0;
+ for(const [w,e] of rec){
+  const an=analyze(w,e.o,f,t);
+  if(e.o===w&&!an.length&&!/[A-Za-z\u0900-\u097F]/.test(w))continue;
+  total+=e.n;rows.push({w,o:e.o,n:e.n,kept:e.o===w,an,sp:spell(e.o,t)});
+ }
+ const rank=r=>r.an.length?0:r.sp?1:r.kept?3:2;
+ rows.sort((a,b)=>rank(a)-rank(b)||b.n-a.n);
+ lastReport={f,t,name,rows,total};renderReport();
+}
+const rnote=r=>r.an.map(a=>a.m).concat(r.sp?['Spelling: '+r.sp.from+' → '+r.sp.word]:[]).join('; ');
+function renderReport(){
+ const R=lastReport,box=$('rpbox');
+ if(!R){box.innerHTML='';return}
+ const conv_=R.rows.filter(r=>!r.kept).length,kept=R.rows.filter(r=>r.kept).length,fl=R.rows.filter(r=>r.an.length).length,sp=R.rows.filter(r=>r.sp).length;
+ $('rpsum').textContent=R.name+' · '+NM[R.f]+' → '+NM[R.t]+' · '+R.total.toLocaleString()+' word(s), '+R.rows.length.toLocaleString()+' unique: '+conv_+' converted, '+kept+' kept as typed, '+fl+' flagged, '+sp+' spelling suggestion(s)';
+ const flt=$('rpf').value;
+ let rows=R.rows.filter(r=>flt==='all'||(flt==='conv'&&!r.kept)||(flt==='kept'&&r.kept)||(flt==='flag'&&(r.an.length||r.sp)));
+ const shown=rows.slice(0,500);
+ let h='<div style="overflow-x:auto"><table class="rp"><thead><tr><th>Original</th><th>Converted</th><th>×</th><th>Notes</th></tr></thead><tbody>';
+ for(const r of shown)h+='<tr><td class="'+cls(R.f)+'">'+esc(r.w)+'</td><td class="'+cls(R.t)+'">'+(r.kept?'<span class="st">(kept)</span>':esc(r.o))+'</td><td>'+r.n+'</td><td>'+r.an.map(a=>'<span class="chip '+a.k+'">'+esc(a.m)+'</span>').join('')+(r.sp?'<span class="chip sp">Spelling: '+esc(r.sp.from)+' → '+esc(r.sp.word)+'</span>':'')+'</td></tr>';
+ h+='</tbody></table></div>';
+ if(rows.length>shown.length)h+='<p class="st">Showing the first 500 of '+rows.length+' rows. Download the CSV for all of them.</p>';
+ if(!rows.length)h='<p class="st">Nothing to show for this filter.</p>';
+ box.innerHTML=h;
+}
+const csvCell=s=>{s=String(s==null?'':s);return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+function reportCsv(){
+ const R=lastReport;const L=['Original,Converted,Count,Status,Checks,Spelling suggestion'];
+ for(const r of R.rows)L.push([r.w,r.kept?'':r.o,r.n,r.kept?'Kept':'Converted',r.an.map(a=>a.m).join('; '),r.sp?r.sp.word:''].map(csvCell).join(','));
+ return L.join('\r\n');
+}
+$('rpf').onchange=renderReport;
+$('rpbuild').onclick=async()=>{
+ const f=fromS.value,t=toS.value;$('rpsum').textContent='Building report…';
+ try{
+  REC=new Map();
+  if(docBuf)await convertFile(docBuf,extOf(docName),f,t);else conv($('in').value,f,t);
+  const rec=REC;REC=null;makeReport(rec,f,t,docBuf?docName:'Typed or pasted text');
+ }catch(e){REC=null;$('rpsum').textContent='Could not build the report.'}
+};
+$('rpcsv').onclick=async()=>{
+ if(!lastReport){$('rpsum').textContent='Build the report first.';return}
+ try{const base=(lastReport.name||'text').replace(/\.[^.]+$/,'').replace(/[^\w\-]+/g,'_');
+  const name='report-'+base+'.csv',blob=new Blob(['\uFEFF'+reportCsv()],{type:'text/csv;charset=utf-8'});
+  await saveFile(name,blob,'text/csv;charset=utf-8');$('rpsum').textContent='Saved '+name+'.';
+ }catch(e){if(!(e&&e.code==='declined'))$('rpsum').textContent='Could not save the CSV.'}
+};
+$('rpcopy').onclick=async()=>{
+ if(!lastReport){$('rpsum').textContent='Build the report first.';return}
+ const txt=lastReport.rows.map(r=>[r.w,r.kept?'':r.o,r.n,rnote(r)].join('\t')).join('\n');
+ try{await navigator.clipboard.writeText('Original\tConverted\tCount\tNotes\n'+txt);$('rpsum').textContent='Report copied.'}catch(e){$('rpsum').textContent='Copy is not available here; use the CSV.'}
+};
+
+/* ---------- Built-in rule check ---------- */
+const TESTS=String.raw`lglZrt निश्चित
+ljsf; विकास
+ljZj विश्व
+lzIfs शिक्षक
+cltlly अतिथि
+l:ylt स्थिति
+kl/l:ylt परिस्थिति
+ljBfyL{ विद्यार्थी
+lj1fg विज्ञान
+clwsf/L अधिकारी
+lgoldt नियमित
+klxrfg पहिचान
+dlxnf महिला
+lqmofsnfk क्रियाकलाप
+clglZrt अनिश्चित
+ljZjf; विश्वास
+l;4fGt सिद्धान्त
+sfo{qmd कार्यक्रम
+sfo{fno कार्यालय
+lgdf{0f निर्माण
+k"jf{wf/ पूर्वाधार
+cGt/f{li6«o अन्तर्राष्ट्रिय
+/fi6«klt राष्ट्रपति
+cfly{s आर्थिक
+;+ljwfg संविधान
+Ifdtf क्षमता
+If]q क्षेत्र
+1fg ज्ञान
+s[t1tf कृतज्ञता
+lj1fkg विज्ञापन
+pBf]u उद्योग
+ljBfnodf विद्यालयमा
+p2]Zo उद्देश्य
+l;4 सिद्ध
+a'4 बुद्ध
+åGå द्वन्द्व
+ljåfg\ विद्वान्
+cfZro{ आश्चर्य
+>Ldfg\ श्रीमान्
+>LdtL श्रीमती
+cª\s अङ्क
+zª\sf शङ्का
+dª\unaf/ मङ्गलबार
+uª\uf गङ्गा
+;ª\s6 सङ्कट
+k~rd पञ्चम
+k~rfot पञ्चायत
+r~rn चञ्चल
+h~hfn जञ्जाल
+b08 दण्ड
+v08 खण्ड
+306f घण्टा
+k08f पण्डा
+;Ddfg सम्मान
+;Dd]ng सम्मेलन
+cGttM अन्ततः
+;DaGw सम्बन्ध
+;+ljwfg;ef संविधानसभा
+cf}ifwL औषधी
+s}bfnL कैदाली
+rfFbgL चाँदनी
+ufpF गाउँ
+7fpF ठाउँ
+xfF;f] हाँसो
+pNn]v उल्लेख
+sNof0f कल्याण
+Joj:yf व्यवस्था
+JolQmut व्यक्तिगत
+tTkZrft\ तत्पश्चात्
+;DklQ सम्पत्ति
+pTs[i6 उत्कृष्ट
+k|zf;g प्रशासन
+k|s[lt प्रकृति
+k|ltj]bg प्रतिवेदन
+k|efjsf/L प्रभावकारी
+k|of]hg प्रयोजन
+k|ZgfjnL प्रश्नावली
+k|yd प्रथम
+k|df0fkq प्रमाणपत्र
+k|ltef प्रतिभा
+k|lti7fg प्रतिष्ठान
+k|l;4 प्रसिद्ध
+k|f/De प्रारम्भ
+k|fy{gf प्रार्थना
+k|Zgf]Q/ प्रश्नोत्तर
+a|Xdf08 ब्रह्माण्ड
+lrXg चिह्न
+;+sNkgf संकल्पना
+s{sf र्कका
+qm क्र
+qmd क्रम
+qmf क्रा
+km फ
+kmn फल
+em झ
+emf झा
+‰f झ
+pm ऊ
+wd{ धर्म
+lg0f{o निर्णय
+g]kfn नेपाल
+ˆ फ्
+¥ र्
+ˆn फ्ल
+Ëf ङ्गा
+6» ट्र
+cf}h औज
+dfG5 मान्छ
+k|df0f प्रमाण
+lstfa किताब
+pk/f]Qm उपरोक्त
+e'QmfgLsf] भुक्तानीको
+M6]nLkmf]g :टेलीफोन
+b'Mv दुःख
+s]Gb| केन्द्र
+/fi6« राष्ट्र`.split('\n').map(l=>l.split(' '));
+const RT='निश्चित विकास विश्व शिक्षक अतिथि स्थिति परिस्थिति विद्यार्थी विज्ञान अधिकारी नियमित पहिचान महिला क्रियाकलाप अनिश्चित विश्वास सिद्धान्त कार्यक्रम कार्यालय निर्माण पूर्वाधार अन्तर्राष्ट्रिय राष्ट्रपति आर्थिक संविधान क्षमता क्षेत्र ज्ञान कृतज्ञता विज्ञापन उद्योग विद्यालयमा उद्देश्य सिद्ध बुद्ध द्वन्द्व विद्वान् आश्चर्य श्रीमान् श्रीमती अङ्क शङ्का मङ्गलबार गङ्गा सङ्कट पञ्चम पञ्चायत चञ्चल जञ्जाल दण्ड खण्ड घण्टा पण्डा सम्मान सम्मेलन अन्ततः सम्बन्ध संविधानसभा औषधी कैदाली चाँदनी गाउँ ठाउँ हाँसो उल्लेख कल्याण व्यवस्था व्यक्तिगत तत्पश्चात् सम्पत्ति उत्कृष्ट प्रशासन प्रकृति प्रतिवेदन प्रभावकारी प्रयोजन प्रश्नावली प्रथम प्रमाणपत्र प्रतिभा प्रतिष्ठान प्रसिद्ध प्रारम्भ प्रार्थना प्रश्नोत्तर ब्रह्माण्ड चिह्न संकल्पना र्कका क्र क्रम क्रा फ फल झ झा ऊ धर्म निर्णय नेपाल फ् र् फ्ल ङ्गा ट्र औज मान्छ प्रमाण किताब उपरोक्त भुक्तानीको :टेलीफोन दुःख केन्द्र राष्ट्र'.split(' ');
+function runRuleCheck(){
+ const fails=[],ov=[],rtf=[];let pass=0,rt=0;
+ for(const [p,e] of TESTS){const g=p2u(p);if(g===e){pass++;const c=conv(p,'pre','uni');if(c!==e)ov.push([p,c,e])}else fails.push([p,g,e])}
+ for(const w of RT){const b=p2u(u2p(w));if(b===w)rt++;else rtf.push([u2p(w),b,w])}
+ return{pass,total:TESTS.length,fails,ov,rt,rtTotal:RT.length,rtf};
+}
+function showRuleCheck(){
+ const r=runRuleCheck(),bad=r.fails.length+r.rtf.length,box=$('rcout');
+ $('rulechk').textContent=(bad?'✗ ':'✓ ')+r.pass+' of '+r.total+' built-in conversion tests passed, '+r.rt+' of '+r.rtTotal+' round-trips (Unicode → font → Unicode) matched'+(r.ov.length?'; '+r.ov.length+' test word(s) are changed by your saved fixes or rules.':'.');
+ let h='';
+ const tbl=(title,rows,cols)=>{if(!rows.length)return '';let s='<h4 style="margin:10px 0 4px">'+title+'</h4><div style="overflow-x:auto"><table class="rp"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';for(const x of rows)s+='<tr><td class="pre">'+esc(x[0])+'</td><td class="dev">'+esc(x[1])+'</td><td class="dev">'+esc(x[2])+'</td></tr>';return s+'</tbody></table></div>'};
+ h+=tbl('Failed conversions',r.fails,['Preeti typed','Got','Expected']);
+ h+=tbl('Failed round-trips',r.rtf,['Preeti produced','Back to Unicode','Original']);
+ h+=tbl('Changed by your saved fixes or rules (the built-in rule is correct)',r.ov,['Preeti typed','You get','Built-in result']);
+ box.innerHTML=h;
+}
+$('rcrun').onclick=showRuleCheck;
+showRuleCheck();
+
+/* ---------- Review-flagged shortcut ---------- */
+$('onlyflag').onchange=()=>renderWords();
+$('rev').onclick=()=>{$('onlyflag').checked=true;renderWords();const d=$('wd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})};
+
+run();
+</script>
+</body>
+</html>
